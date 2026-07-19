@@ -339,9 +339,9 @@ function buildPage(drug, q) {
     const dAttr = ' data-drug="' + escHtml(drug) + '" data-q="' + escHtml(String(q)) + '" data-idx="' + idx + '"';
     const reviewHtml =
       '<div class="review-legend">' +
-        '<span>1</span> 正確　<span>2</span> 不正確　<span>3</span> 遺漏　<span>4</span> 幻覺　<span>5</span> 仿單未記載之醫藥常識　<span>6</span> 未收斂重複截斷' +
+        '<span>1</span> 正確　<span>2</span> 不正確　<span>3</span> 遺漏　<span>4</span> 幻覺　<span>5</span> 仿單未記載之醫藥常識　<span>6</span> 未收斂重複截斷　<span>7</span> 動作順序錯誤　<span>8</span> 出現非中文語言' +
       '</div>' +
-      '<input type="text" class="review-input js-review" placeholder="輸入編號，如 1 或 1 3 4"' + dAttr +
+      '<input type="text" class="review-input js-review" placeholder="輸入編號，如 1 或 1 3 7"' + dAttr +
         ' value="' + escHtml(s.review || "") + '">' +
       '<div class="field-error-msg" id="err-review-' + idx + '"></div>';
 
@@ -449,7 +449,7 @@ function toggleRow(idx) {
   if (tog) tog.textContent = collapsed ? "▸ 展開" : "▾ 收合";
 }
 
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWDCV7EAnJ-m9ifHiE0fcxvKE1vxXfHuEqM5C0s-RyuNWaC5X8d5HwfqvO0-e7Rq4K/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTeE9Pzdun2udcSDAGCKWlprRL-Q-HfSEyBen8rJhfhmF5z1aD-tzPhbrwQFEHk3p0/exec";
 
 function submitToForm() {
   const params = new URLSearchParams(location.search);
@@ -464,8 +464,8 @@ function submitToForm() {
     const label = a.label || a.model;
     if (!s.review.trim()) {
       errors.push(label + "：覆核未填");
-    } else if (!/^[1-6]( [1-6])*$/.test(s.review.trim())) {
-      errors.push(label + "：覆核格式錯誤（請輸入 1–6 的數字，以空格分隔，如 1 或 1 3 4）");
+    } else if (!/^[1-8]( [1-8])*$/.test(s.review.trim())) {
+      errors.push(label + "：覆核格式錯誤（請輸入 1–8 的數字，以空格分隔，如 1 或 1 3 4）");
     }
     if (s.safety === "") errors.push(label + "：可用性/安全性未填");
   });
@@ -486,7 +486,6 @@ function submitToForm() {
       return {
         label: a.label,
         model: a.model,
-        answer: a.answer,
         review: s.review,
         safety: s.safety,
         reason: s.reason,
@@ -496,11 +495,11 @@ function submitToForm() {
 
   fetch(APPS_SCRIPT_URL, {
     method: "POST",
+    mode: "no-cors",
     headers: { "Content-Type": "text/plain" },
     body: JSON.stringify(payload),
   })
-    .then(r => r.json())
-    .then(res => {
+    .then(() => {
       if (btn) { btn.disabled = true; btn.style.background = "#2e7d32"; btn.textContent = "已送出 ✓"; }
     })
     .catch(err => {
